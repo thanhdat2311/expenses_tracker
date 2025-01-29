@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.dathocjava.dathocjava_sample.dto.request.UserRequestDTO;
 import vn.dathocjava.dathocjava_sample.response.ResponeSuccess;
 import vn.dathocjava.dathocjava_sample.response.ResponseData;
+import vn.dathocjava.dathocjava_sample.response.ResponseError;
 
 import java.util.Date;
 import java.util.List;
@@ -21,8 +22,9 @@ import java.util.List;
 public class UserController {
 
     @PostMapping("/")
-    public ResponseData<Integer> addUser(@Valid @RequestBody UserRequestDTO userrequestDTO){
-        return new ResponseData(HttpStatus.CREATED.value(),"Create successfully",2);
+    public ResponseError addUser(@Valid @RequestBody UserRequestDTO userrequestDTO){
+        //return new ResponseData<>(HttpStatus.CREATED.value(),"Create successfully");
+        return new ResponseError(HttpStatus.BAD_REQUEST.value(),"Create unsuccessfully!");
     }
     @PutMapping("/{userId}")
     public ResponeSuccess updateUser (@Min(1) @PathVariable("userId") int id,
