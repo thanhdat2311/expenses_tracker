@@ -11,28 +11,18 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import vn.dathocjava.dathocjava_sample.dto.request.UserRequestDTO;
 import vn.dathocjava.dathocjava_sample.response.ResponeSuccess;
+import vn.dathocjava.dathocjava_sample.response.ResponseData;
+
+import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
-    @Operation(summary = "summary", description = "description", responses = {
-            @ApiResponse(responseCode = "201",description = "user added successfully!"
-            , content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(
-            value = """
-                    {
-                        "status": 201,
-                        "message": "Create successfully",
-                        "data": null
-                    }
-                    """)
-            )
-            )
-    })
-    @PostMapping("/")
-    public ResponeSuccess addUser(@Valid @RequestBody UserRequestDTO userrequestDTO){
-        return new ResponeSuccess(HttpStatus.CREATED,"Create successfully");
 
+    @PostMapping("/")
+    public ResponseData<Integer> addUser(@Valid @RequestBody UserRequestDTO userrequestDTO){
+        return new ResponseData(HttpStatus.CREATED.value(),"Create successfully",2);
     }
     @PutMapping("/{userId}")
     public ResponeSuccess updateUser (@Min(1) @PathVariable("userId") int id,
@@ -41,14 +31,18 @@ public class UserController {
         return new ResponeSuccess(HttpStatus.ACCEPTED,"Update successfully");
     }
     @GetMapping("/{userId}")
-    public ResponeSuccess getUser (@Min(1) @PathVariable("userId") int id){
+    public ResponseData<List<UserRequestDTO>> getUser (@Min(1) @PathVariable("userId") int id){
         System.out.println("delete user id = "+ id);
-        return new ResponeSuccess(HttpStatus.NO_CONTENT,"delete user id = "+ id);
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(),"delete user id = "+ id,
+                List.of(new UserRequestDTO("thanh","dat","0123456789",
+                        "datmkt2311@gmail.com"),
+                        new UserRequestDTO("thanh", "dat", "0123456789",
+                        "datmkt2311@gmail.com")));
     }
     @DeleteMapping("/{userId}")
     public ResponeSuccess deleteUser (@Min(1) @PathVariable("userId") int id){
         System.out.println("delete user id = "+ id);
-        return new ResponeSuccess(HttpStatus.NO_CONTENT,"delete user id = "+ id);
+        return new ResponeSuccess(HttpStatus.NO_CONTENT,"get user");
     }
 }
-// 16:00
+// 24:10

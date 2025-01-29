@@ -44,12 +44,11 @@ public class UserRequestDTO implements Serializable {
 
 
 
-    public UserRequestDTO(String firstname, String lastname, String phone, String email, Date DOB) {
+    public UserRequestDTO(String firstname, String lastname, String phone, String email) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.phone = phone;
         this.email = email;
-        this.DOB = DOB;
     }
 
     public UserStatus getUserStatus() {
