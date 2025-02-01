@@ -27,13 +27,13 @@ public class UserController {
         return new ResponseError(HttpStatus.BAD_REQUEST.value(),"Create unsuccessfully!");
     }
     @PutMapping("/{userId}")
-    public ResponeSuccess updateUser (@Min(1) @PathVariable("userId") int id,
+    public ResponeSuccess updateUser ( @PathVariable("userId") @Min(1) int id,
                              @Valid @RequestBody UserRequestDTO userRequestDTO){
         System.out.println("request update user id = "+ id);
         return new ResponeSuccess(HttpStatus.ACCEPTED,"Update successfully");
     }
     @GetMapping("/{userId}")
-    public ResponseData<List<UserRequestDTO>> getUser (@Min(1) @PathVariable("userId") int id){
+    public ResponseData<List<UserRequestDTO>> getUser ( @PathVariable("userId") @Min(1) int id){
         System.out.println("delete user id = "+ id);
         return new ResponseData<>(HttpStatus.NO_CONTENT.value(),"delete user id = "+ id,
                 List.of(new UserRequestDTO("thanh","dat","0123456789",

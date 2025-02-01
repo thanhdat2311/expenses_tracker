@@ -1,10 +1,7 @@
 package vn.dathocjava.dathocjava_sample.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import vn.dathocjava.dathocjava_sample.util.*;
 
@@ -17,12 +14,15 @@ public class UserRequestDTO implements Serializable {
     @NotBlank(message = "Last Name Not blank")
     private String lastname;
     //@Pattern(regexp = "^\\d{10}$", message = "phone invalid format")
+    @NotBlank(message = "Phone cannot Blank")
     @PhoneNumber
     private String phone;
+    @NotBlank(message = "Email cannot Blank")
     @Email (message = "email invalid")
     private String email;
     // cái này chỉ dùng được với status
     //@Pattern(regexp = "^ACTIVE|INACTIVE|NONE$", message = "status must be one in {ACTIVE, INACTIVE, NONE}")
+    @NotNull(message = "user status cannot null")
     @EnumPattern(name = "userStatus", regexp = "ACTIVE|INACTIVE|NONE")
     private UserStatus userStatus;
     @NotNull
