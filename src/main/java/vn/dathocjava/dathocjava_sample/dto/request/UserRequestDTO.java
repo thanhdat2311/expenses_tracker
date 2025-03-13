@@ -2,12 +2,16 @@ package vn.dathocjava.dathocjava_sample.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
+import lombok.Getter;
 import org.springframework.format.annotation.DateTimeFormat;
+import vn.dathocjava.dathocjava_sample.dto.validator.EnumValue;
 import vn.dathocjava.dathocjava_sample.util.*;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Set;
 
+@Getter
 public class UserRequestDTO implements Serializable {
     @NotBlank(message = " First Name Not blank")
     private String firstname;
@@ -30,10 +34,22 @@ public class UserRequestDTO implements Serializable {
     @JsonFormat(pattern = "MM/dd/yyyy")
     private Date DOB;
 
+    @NotNull(message = "username must be not null")
+    private String username;
 
+    @NotNull(message = "password must be not null")
+    private String password;
 
     @GenderSubset(anyOf = {Gender.MALE,Gender.FEMALE,Gender.OTHER})
     private Gender gender;
+
+    @NotNull(message = "type must be not null")
+    @EnumValue(name = "type", enumClass = UserType.class)
+    private String type;
+
+    @NotEmpty(message = "addresses can not empty")
+    private Set<AddressDTO> addresses;
+
     public Gender getGender() {
         return gender;
     }
@@ -51,54 +67,4 @@ public class UserRequestDTO implements Serializable {
         this.email = email;
     }
 
-    public UserStatus getUserStatus() {
-        return userStatus;
-    }
-
-    public void setUserStatus(UserStatus userStatus) {
-        this.userStatus = userStatus;
-    }
-
-    public UserRequestDTO() {
-    }
-
-    public Date getDOB() {
-        return DOB;
-    }
-
-    public void setDOB(Date DOB) {
-        this.DOB = DOB;
-    }
-
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
 }
