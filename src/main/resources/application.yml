@@ -5,3 +5,6 @@ spring:
     name: dathocjava-sample
   profiles:
     active: @spring.profiles.active@
+
+  kafka:
+    bootstrap-server: localhost:29092

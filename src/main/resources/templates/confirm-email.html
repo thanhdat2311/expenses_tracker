@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Your Account</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        .container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .message {
+            margin-bottom: 20px;
+        }
+        .confirm-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .confirm-button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="message">
+        <h2>Please confirm your account.</h2>
+        <p>Just click the link below:</p>
+    </div>
+    <a th:href="${linkConfirm}"class="confirm-button">Confirm</a>
+</div>
+</body>
+</html>

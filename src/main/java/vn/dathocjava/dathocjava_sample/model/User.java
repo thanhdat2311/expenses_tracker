@@ -4,21 +4,24 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import vn.dathocjava.dathocjava_sample.util.Gender;
 import vn.dathocjava.dathocjava_sample.util.UserStatus;
 import vn.dathocjava.dathocjava_sample.util.UserType;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.Serializable;
+import java.util.*;
+
 
 @Setter
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "tbl_user")
-public class User extends AbstractEntity {
+@Entity
+@Table(name = "tbl_user")
+public class User   extends AbstractEntity implements UserDetails,Serializable {
     @Column(name = "first_name")
     private String firstName;
 
@@ -67,5 +70,31 @@ public class User extends AbstractEntity {
             addresses.add(address);
             address.setUser(this); // save user_id
         }
+    }
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return false;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnabled() {
+       return UserStatus.ACTIVE.equals(status);
     }
 }

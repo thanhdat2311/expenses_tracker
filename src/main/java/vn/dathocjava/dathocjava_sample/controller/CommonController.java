@@ -1,6 +1,5 @@
 package vn.dathocjava.dathocjava_sample.controller;
 
-import io.swagger.v3.oas.annotations.media.Content;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import vn.dathocjava.dathocjava_sample.response.ResponseData;
-import vn.dathocjava.dathocjava_sample.service.implement.MailService;
+import vn.dathocjava.dathocjava_sample.service.implement.impl.MailService;
 
 import java.io.UnsupportedEncodingException;
 
