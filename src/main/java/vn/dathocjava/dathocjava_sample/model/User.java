@@ -1,100 +1,80 @@
 package vn.dathocjava.dathocjava_sample.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import vn.dathocjava.dathocjava_sample.util.Gender;
-import vn.dathocjava.dathocjava_sample.util.UserStatus;
-import vn.dathocjava.dathocjava_sample.util.UserType;
 
-import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-
-@Setter
-@Getter
-@Builder
+@Entity
+@Table(name = "users")
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "tbl_user")
-public class User   extends AbstractEntity implements UserDetails,Serializable {
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name = "last_name")
-    private String lastName;
-
-    @Column(name = "date_of_birth")
-    @Temporal(TemporalType.DATE)
-    private Date dateOfBirth;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "gender")
-    private Gender gender;
-
-    @Column(name = "phone")
-    private String phone;
-
-    @Column(name = "email")
+@Builder
+public class User extends BaseModel implements UserDetails {
+    @Column(name = "fullname", nullable = false)
+    private String name;
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
-
-    @Column(name = "username")
-    private String username;
-
-    @Column(name = "password")
-    private String password;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "type")
-    private UserType type;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "status")
-    private UserStatus status;
-
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "user")
-    private Set<Address> addresses = new HashSet<>();
-
-    public void saveAddress(Address address) {
-        if (address != null) {
-            if (addresses == null) {
-                addresses = new HashSet<>();
-            }
-            addresses.add(address);
-            address.setUser(this); // save user_id
-        }
-    }
-
+    @Column(name = "phone", nullable = false)
+    private String phone;
+    @Column(name = "password", nullable = false)
+    @JsonIgnore
+    private String passwordUser;
+    @Column(name = "address")
+    private String address;
+    @Column(name = "is_active")
+    private String is_active;
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
+        authorityList.add(new SimpleGrantedAuthority("ROLE_" + getRole().getName().toUpperCase()));
+        return authorityList;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.getPasswordUser();
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-       return UserStatus.ACTIVE.equals(status);
+        return true;
     }
+
 }
+
+

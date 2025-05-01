@@ -14,3 +14,8 @@ openapi:
     serverName: Server Dev
     title: ${API_TITLE:DUMMY-API-TITLE}
     version: 1.0.0
+
+jwt:
+  expiryMinutes: 5
+  accessKey: 6OEnpQUN2vvW34I9848IB01al3oVzuzJ8s9hXxdptrg=
+  refreshKey: UsDxFykhceleSu8lGzepOp/aNMLyw3O9dIvYQ8DgRls=

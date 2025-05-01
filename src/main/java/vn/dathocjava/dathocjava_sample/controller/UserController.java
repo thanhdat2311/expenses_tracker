@@ -1,156 +1,137 @@
 package vn.dathocjava.dathocjava_sample.controller;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
+
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import vn.dathocjava.dathocjava_sample.dto.request.UserRequestDTO;
-import vn.dathocjava.dathocjava_sample.dto.response.UserDetailResponse;
-import vn.dathocjava.dathocjava_sample.response.PageResponse;
+import vn.dathocjava.dathocjava_sample.dto.request.UserChangePassDTO;
+import vn.dathocjava.dathocjava_sample.dto.request.UserDTO;
+import vn.dathocjava.dathocjava_sample.dto.request.UserLoginDTO;
+import vn.dathocjava.dathocjava_sample.dto.request.UserUpdateDTO;
+import vn.dathocjava.dathocjava_sample.dto.response.LoginResponse;
+import vn.dathocjava.dathocjava_sample.model.User;
 import vn.dathocjava.dathocjava_sample.response.ResponseData;
-import vn.dathocjava.dathocjava_sample.response.ResponseError;
-import vn.dathocjava.dathocjava_sample.service.implement.impl.UserService;
+import vn.dathocjava.dathocjava_sample.response.UserResponse;
+import vn.dathocjava.dathocjava_sample.service.implement.UserService;
 
-import java.io.IOException;
 import java.util.List;
-import static jakarta.servlet.RequestDispatcher.ERROR_MESSAGE;
 
-@Slf4j
 @RestController
-@RequestMapping("/user")
-@Tag(name = "User Controller")
+@RequestMapping("expenses-tracker/v1/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    // post
-    @Operation(method = "POST", summary = "Add new user", description = "Send a request via this API to create new user")
-    @PostMapping("/add")
-    public ResponseData<Long> addUser(@Valid @RequestBody UserRequestDTO userrequestDTO) {
+
+    @PostMapping("/register")
+    public ResponseEntity<?> createUser(@Valid @RequestBody UserDTO userDTO, BindingResult result) {
         try {
-            long userId = userService.saveUser(userrequestDTO);
-            return new ResponseData<>(HttpStatus.CREATED.value(), "Add user Successfully", userId);
+
+            if (result.hasErrors()) {
+                List<String> errorMessages = result.getFieldErrors().stream().map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage()).toList();
+                return ResponseEntity.badRequest().body(errorMessages);
+            }
+            if (!userDTO.getPassword().equals(userDTO.getRetypePassword())) {
+                // đổi sang báo cả status
+                return ResponseEntity.badRequest().body("Wrong Retype Password");
+            }
+            User userRegister = userService.createUser(userDTO);
+            if (userRegister == null) {
+                return ResponseEntity.badRequest().body("Email is exist");
+            }
+            ;
+            return ResponseEntity.ok(userRegister);
         } catch (Exception e) {
-            log.error("error: {}", e.getMessage(), e.getCause());
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    @Operation(summary = "Confirm user", description = "Send a request via this API to confirm user")
-    @GetMapping("/confirm/{userId}")
-    public ResponseData<String> confirm(@Min(1) @PathVariable int userId,
-                                        @RequestParam String verifyCode,
-                                        HttpServletResponse httpServletResponse) throws IOException {
-        log.info("Confirm user, userId={}, verifyCode={}", userId, verifyCode);
-
+    @PostMapping("/login")
+    public ResponseData<?> loginUser(@Valid @RequestBody UserLoginDTO userLoginDTO,
+                                     BindingResult result) {
         try {
-            userService.confirmUser(userId, verifyCode);
-            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "User has confirmed successfully");
-        } catch (Exception e) {
-            log.error("errorMessage={}", e.getMessage(), e.getCause());
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Confirm was failed");
-        }finally {
-            httpServletResponse.sendRedirect("https://www.facebook.com/");
-        }
-    }
-
-
-
-    // put
-    @PutMapping("/{userId}")
-    public ResponseData<Void> updateUser(@PathVariable @Min(1) long userId, @Valid @RequestBody UserRequestDTO request) {
-        log.info("Request update userId={}", userId);
-
-        try {
-            userService.updateUser(userId, request);
-            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Update successfully!");
-        } catch (Exception e) {
-            log.error(ERROR_MESSAGE, e.getMessage(), e.getCause());
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
-        }
-    }
-
-    // get
-    @GetMapping("/{userId}")
-    public ResponseData<UserDetailResponse> getUser(@PathVariable("userId") @Min(1) int id) {
-        try {
-            UserDetailResponse userDetailResponse = userService.getUser(id);
-            return new ResponseData<>(HttpStatus.OK.value(),
-                    "Get User Successfully!",
-                    userDetailResponse);
-        } catch (Exception e) {
-           return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Get Fail!");
-        }
-    }
-
-    @GetMapping("/list")
-    public ResponseData<List<UserDetailResponse>> getUserList(@RequestParam("pageNo") int pageNo,
-                                                        @RequestParam("pageSize") int pageSize,
-                                                              @RequestParam(required = false) String sortBy
-    ) {
-        try {
-            List<UserDetailResponse> userDetailResponseList = userService.getAllUser(pageNo,pageSize, sortBy);
-            return new ResponseData<>(HttpStatus.OK.value(),
-                    "Get User Successfully!",
-                    userDetailResponseList
+            String token = userService.login(userLoginDTO.getEmail(),
+                    userLoginDTO.getPassword(),
+                    userLoginDTO.getRoleId()
             );
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Login successfully!",token);
         } catch (Exception e) {
-            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Get Fail!");
+            return new ResponseData<>(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
+
+
         }
     }
 
-    @Operation(method = "GET", summary = "get list of Users with multiple sort", description = "Multiple sort get list")
-    @GetMapping("/list/mutiple-order")
-    public ResponseData<PageResponse<?>> getUserListMultipleSort(@RequestParam("pageNo") int pageNo,
-                                                                 @RequestParam("pageSize") int pageSize,
-                                                                 @RequestParam(required = false) String... sortBy
-    ) {
+    @GetMapping("/all")
+    public ResponseEntity<?> getTasksByCompanyId() {
         try {
-            PageResponse userDetailResponseList = userService.getAllUserByMutipleOrders(pageNo,pageSize, sortBy);
-            return new ResponseData<>(HttpStatus.OK.value(),
-                    "Get User Successfully!",
-                    userDetailResponseList
-            );
+            List<User> userList = userService.getUserList();
+            List<UserResponse> userResponse = UserResponse.fromListUser(userList);
+            return ResponseEntity.ok().body(userResponse);
         } catch (Exception e) {
-            return  new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @Operation(method = "GET", summary = "get list of Users with multiple sort", description = "Multiple sort get list")
-    @GetMapping("/list/search-order")
-    public ResponseData<PageResponse<?>> getUserListbySortAndSearch(@RequestParam("pageNo") int pageNo,
-                                                                 @RequestParam("pageSize") int pageSize,
-                                                                    @RequestParam("search") String search,
-                                                                 @RequestParam(required = false) String sortBy
-    ) {
+
+    @GetMapping("/details")
+    public ResponseData<?> getUserDetails(@RequestHeader("Authorization") String token) {
         try {
-            PageResponse userDetailResponseList = userService.getAllUserBySortColumnAndSearch(pageNo,pageSize, search ,sortBy);
-            return new ResponseData<>(HttpStatus.OK.value(),
-                    "Get User Successfully!",
-                    userDetailResponseList
-            );
+            token = token.substring(7);
+            User user = userService.getUserDetails(token.toString());
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(),
+                    "Get User Detail successfully!",
+                    UserResponse.fromUser(user));
         } catch (Exception e) {
-            return  new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return new ResponseData<>(HttpStatus.BAD_GATEWAY.value(), e.getMessage());
         }
     }
 
-    // delete
-
-    @Operation(summary = "Delete user permanently", description = "Send a request via this API to delete user permanently")
-    @DeleteMapping("/{userId}")
-    public ResponseData<Void> deleteUser(@PathVariable @Min(value = 1, message = "userId must be greater than 0") long userId) {
-        log.info("Request delete userId={}", userId);
-
+    @PutMapping("/changePassword")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody UserChangePassDTO userChangePassDTO, @RequestHeader("Authorization") String token, BindingResult result) {
         try {
-            userService.deleteUser(userId);
-            return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Delete successfully!");
+            if (result.hasErrors()) {
+                List<String> errorMessages = result.getFieldErrors().stream().map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage()).toList();
+                return ResponseEntity.badRequest().body(errorMessages);
+            }
+            token = token.substring(7);
+            User user = userService.changePassword(userChangePassDTO, token);
+            return ResponseEntity.ok(UserResponse.fromUser(user));
         } catch (Exception e) {
-            log.error(ERROR_MESSAGE, e.getMessage(), e.getCause());
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Delete user fail");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
+    @PutMapping("/{userEmail}")
+    public ResponseEntity<?> updateUser(@Valid @RequestBody UserUpdateDTO userUpdateDTO,
+                                        @PathVariable String userEmail,
+                                        BindingResult result) {
+        try {
+            if (result.hasErrors()) {
+                List<String> errorMessages = result.getFieldErrors().stream().map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage()).toList();
+                return ResponseEntity.badRequest().body(errorMessages);
+            }
+            User user = userService.updateUser(userUpdateDTO, userEmail);
+            return ResponseEntity.ok(UserResponse.fromUser(user));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{userEmail}")
+    public ResponseEntity<?> deleteUser( @PathVariable String userEmail) {
+        try {
+            if(userEmail == null || userEmail.trim().isEmpty()){
+                return ResponseEntity.badRequest().body("User email cannot be null r empty!");
+            }
+            Boolean deleteUser = userService.deleteUser(userEmail);
+            if (deleteUser) {
+                return ResponseEntity.ok().body("Delete Successfully!");
+            } else {
+                return ResponseEntity.ok().body("Delete UnSuccessfully!");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
-// 24:10

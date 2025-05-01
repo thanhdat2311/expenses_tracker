@@ -1,9 +1,11 @@
+server:
+  port: 8084
 spring:
   config:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:postgresql://localhost:5432/JPATayJava
+    url: jdbc:postgresql://localhost:5432/expense_tracker
     #username: ${POSTGRES_USER:postgres}
     #password: ${POSTGRES_PASSWORD:password}
     username: postgres
@@ -30,3 +32,8 @@ openapi:
     serverName: Server Dev
     title: ${API_TITLE:DUMMY-API-TITLE}
     version: 1.0.0
+
+jwt:
+  expiration: 2592000
+  #30 days = 30 * 24 * 60 * 60
+  secretKey: ${JWT_SECRET:NL1x/M2kLalft5G+P8qyfY+oLLl9sJx+k1/ZTbw9gD4=}
