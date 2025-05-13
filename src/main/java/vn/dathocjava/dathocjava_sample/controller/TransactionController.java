@@ -80,7 +80,7 @@ public class TransactionController {
 
             TransactionResponse transactionResponse = transactionService.updateTransaction(id,transactionDTO);
             return ResponseEntity
-                    .ok(new ResponseData<>(HttpStatus.ACCEPTED.value(), "Get Successfully", transactionResponse));
+                    .ok(new ResponseData<>(HttpStatus.ACCEPTED.value(), "Update Successfully", transactionResponse));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         }

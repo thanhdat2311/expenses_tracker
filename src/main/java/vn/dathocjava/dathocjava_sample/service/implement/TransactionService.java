@@ -66,6 +66,7 @@ public class TransactionService implements ITransactionService {
         );
         Transaction transactionUpdate = TransactionMapper.toEntity(transactionDTO,user,category);
         transactionUpdate.setId(transactionId);
+        transactionUpdate.setCreatedAt(transaction.getCreatedAt());
         TransactionResponse transactionResponse =  TransactionMapper.toResponse(transactionRepo.save(transactionUpdate));
         return transactionResponse;
     }
