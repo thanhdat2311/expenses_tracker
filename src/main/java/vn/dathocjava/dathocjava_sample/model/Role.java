@@ -7,7 +7,6 @@ import lombok.*;
 
 @Entity
 @Table(name="roles")
-@Data
 @Getter
 @Setter
 @AllArgsConstructor

@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.aspectj.weaver.tools.cache.SimpleCacheFactory.path;
+
 @Component
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
@@ -35,6 +37,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             if (isByPassToken(request)) {
+                System.out.println(">>> Đã vào filter trước khi gọi controller: " + request.getRequestURI());
+
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -65,6 +69,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of("salemanagement/v1/resetPassword/confirmOtp", "POST"),
                 Pair.of("expenses-tracker/v1/users/login", "POST"),
                 Pair.of("salemanagement/v1/user/register", "POST")
+
         );
         for (Pair<String, String> byPassToken : byPassTokens) {
             if (request.getServletPath().contains(byPassToken.getLeft())

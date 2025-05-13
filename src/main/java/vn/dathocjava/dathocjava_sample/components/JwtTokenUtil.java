@@ -68,6 +68,19 @@ public class JwtTokenUtil {
     public String extractEmail(String token){
         return  extractClaim(token, Claims::getSubject);
     }
+    public Long extractUserId(String token) {
+        return extractClaim(token, claims -> {
+            Object value = claims.get("userId");
+            if (value instanceof Integer) {
+                return ((Integer) value).longValue();
+            } else if (value instanceof Long) {
+                return (Long) value;
+            } else {
+                throw new IllegalStateException("Invalid userId type in token: " + value.getClass());
+            }
+        });
+    }
+
     public boolean validateToken(String token, UserDetails userDetails){
         String phone = extractEmail(token);
         return (phone.equals(userDetails.getUsername())

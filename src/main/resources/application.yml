@@ -4,15 +4,8 @@ spring:
   application:
     name: dathocjava-sample
   profiles:
-    active: @spring.profiles.active@
+    active: dev
 
   kafka:
     bootstrap-server: localhost:29092
 
-jwt:
-  expiryMinutes: 5
-  expiryHour: 1
-  expiryDay: 14
-  accessKey: 6OEnpQUN2vvW34I9848IB01al3oVzuzJ8s9hXxdptrg=
-  refreshKey: UsDxFykhceleSu8lGzepOp/aNMLyw3O9dIvYQ8DgRls=
-  resetKey: UsDxFykhceleSu8lGzepOp/aNMLyw3O9dIvYQ8DgRls=

@@ -1,4 +1,4 @@
-package vn.dathocjava.dathocjava_sample.response;
+package vn.dathocjava.dathocjava_sample.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

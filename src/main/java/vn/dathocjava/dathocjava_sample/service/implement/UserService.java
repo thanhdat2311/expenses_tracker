@@ -24,6 +24,7 @@ public class UserService implements IUserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtil jwtTokenUtil;
     private final AuthenticationManager authenticationManager;
+
     @Override
     public User createUser(UserDTO userDTO) throws Exception {
         return null;
@@ -32,13 +33,13 @@ public class UserService implements IUserService {
     @Override
     public String login(String email, String password, Long RoleId) throws Exception {
         Optional<User> userOptional = userRepo.findByEmail(email);
-        if (userOptional.isEmpty()){
+        if (userOptional.isEmpty()) {
             throw new Exception("Invalid phone number/password");
-        }else {
+        } else {
             System.out.println("Have User");
         }
         User user = userOptional.get();
-        if (!passwordEncoder.matches(password, user.getPassword())){
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new Exception("Invalid phone number/password");
         }
 
@@ -60,13 +61,13 @@ public class UserService implements IUserService {
 
     @Override
     public User getUserDetails(String token) throws Exception {
-        if(jwtTokenUtil.isTokenExpired(token)){
+        if (jwtTokenUtil.isTokenExpired(token)) {
             throw new Exception("Token is expired");
         }
 
         String email = jwtTokenUtil.extractEmail(token);
         User user = userRepo.findByEmail(email).orElseThrow(
-                () ->  new EntityNotFoundException("User not found"));
+                () -> new EntityNotFoundException("User not found"));
         return user;
     }
 

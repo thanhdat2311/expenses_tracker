@@ -10,7 +10,6 @@ import vn.dathocjava.dathocjava_sample.dto.request.UserChangePassDTO;
 import vn.dathocjava.dathocjava_sample.dto.request.UserDTO;
 import vn.dathocjava.dathocjava_sample.dto.request.UserLoginDTO;
 import vn.dathocjava.dathocjava_sample.dto.request.UserUpdateDTO;
-import vn.dathocjava.dathocjava_sample.dto.response.LoginResponse;
 import vn.dathocjava.dathocjava_sample.model.User;
 import vn.dathocjava.dathocjava_sample.response.ResponseData;
 import vn.dathocjava.dathocjava_sample.response.UserResponse;
@@ -48,16 +47,17 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseData<?> loginUser(@Valid @RequestBody UserLoginDTO userLoginDTO,
+    public ResponseEntity<ResponseData<?>> loginUser(@Valid @RequestBody UserLoginDTO userLoginDTO,
                                      BindingResult result) {
         try {
             String token = userService.login(userLoginDTO.getEmail(),
                     userLoginDTO.getPassword(),
                     userLoginDTO.getRoleId()
             );
-            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Login successfully!",token);
+            return ResponseEntity.ok(new ResponseData<>(HttpStatus.ACCEPTED.value(), "Login successfully!",token));
+
         } catch (Exception e) {
-            return new ResponseData<>(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseData<>(HttpStatus.UNAUTHORIZED.value(), e.getMessage()));
 
 
         }
