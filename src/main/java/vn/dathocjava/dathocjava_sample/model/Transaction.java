@@ -33,7 +33,7 @@ public class Transaction extends BaseModel{
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @CreationTimestamp
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     @Column(name="transaction_date",nullable = false, updatable = false)
     private Date transactionDate;

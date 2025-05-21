@@ -3,7 +3,7 @@ services:
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
-    container_name: zookeeper
+    container_name: zookeeper-expense-tracker
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -12,7 +12,7 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka
+    container_name: kafka-expenses-tracker
     depends_on:
       - zookeeper
     ports:
@@ -26,8 +26,8 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
 
-  api-service:
-    container_name: api-container-1
+  api-expense-tracker-service:
+    container_name: api-container-expense-tracker
     build:
       context: ./
       dockerfile: Dockerfile
@@ -37,17 +37,7 @@ services:
       - SPRING_PROFILES_ACTIVE=dev
     ports:
       - '8082:8081'
-  redis:
-    image: redis:6.2-alpine
-    container_name: redis
-    hostname: redis
-    ports:
-      - '6379:6379'
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_DISABLE_COMMANDS=FLUSHDB:FLUSHALL
-    networks:
-      - backend
+
 
 networks:
   backend:

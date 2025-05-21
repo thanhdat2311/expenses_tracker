@@ -1,13 +1,22 @@
 package vn.dathocjava.dathocjava_sample.service.implement;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.thymeleaf.context.Context;
 import vn.dathocjava.dathocjava_sample.components.JwtTokenUtil;
 import vn.dathocjava.dathocjava_sample.dto.mapper.TransactionMapper;
 import vn.dathocjava.dathocjava_sample.dto.request.TransactionDTO;
@@ -21,10 +30,11 @@ import vn.dathocjava.dathocjava_sample.repository.TransactionRepo;
 import vn.dathocjava.dathocjava_sample.repository.UserRepo;
 import vn.dathocjava.dathocjava_sample.service.interfaceClass.ITransactionService;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +43,8 @@ public class TransactionService implements ITransactionService {
     private final UserRepo userRepo;
     private final TransactionRepo transactionRepo;
     private final JwtTokenUtil jwtTokenUtil;
-
+    private final KafkaTemplate<String,String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
     @Override
     public TransactionResponse createTransaction(TransactionDTO transactionDTO) throws Exception {
         Category category = categoryRepo.findById(transactionDTO.getCategoryId()).orElseThrow(
@@ -42,9 +53,17 @@ public class TransactionService implements ITransactionService {
         User user = userRepo.findByEmail(transactionDTO.getUserEmail()).orElseThrow(
                 () -> new Exception("Not found User")
         );
-
-        return TransactionMapper.toResponse
+        TransactionResponse transactionResponse = TransactionMapper.toResponse
                 (transactionRepo.save(TransactionMapper.toEntity(transactionDTO, user, category)));
+        String message = objectMapper.writeValueAsString(Map.of(
+                "group", "monthly-report-group",
+                "userEmail",transactionDTO.getUserEmail(),
+                "todo","[TRANSACTION-EVENT] - CREATE",
+                "targetId",transactionResponse.getId(),
+                "timeStamp", Instant.now()
+        ));
+        kafkaTemplate.send("transaction-event", message);
+        return transactionResponse;
     }
 
     @Override
@@ -52,6 +71,14 @@ public class TransactionService implements ITransactionService {
         Transaction transaction = transactionRepo.findById(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException("Not found transaction!"));
         transactionRepo.delete(transaction);
+        String message = objectMapper.writeValueAsString(Map.of(
+                "group", "monthly-report-group",
+                "userEmail",transaction.getUser().getEmail(),
+                "todo","[TRANSACTION-EVENT] - DELETE",
+                "targetId",transaction.getId(),
+                "timeStamp", Instant.now()
+        ));
+        kafkaTemplate.send("transaction-event", message);
         return transactionId;
     }
     @Override
@@ -68,6 +95,14 @@ public class TransactionService implements ITransactionService {
         transactionUpdate.setId(transactionId);
         transactionUpdate.setCreatedAt(transaction.getCreatedAt());
         TransactionResponse transactionResponse =  TransactionMapper.toResponse(transactionRepo.save(transactionUpdate));
+        String message = objectMapper.writeValueAsString(Map.of(
+                "group", "monthly-report-group",
+                "userEmail",transactionDTO.getUserEmail(),
+                "todo","[TRANSACTION-EVENT] - UPDATE - ID: " ,
+                "targetId",transaction.getId(),
+                "timeStamp", Instant.now()
+        ));
+        kafkaTemplate.send("transaction-event", message);
         return transactionResponse;
     }
 
@@ -106,4 +141,33 @@ List<TransactionResponse> transactionResponseList = transactionPage.getContent()
                 .items(transactionResponseList)
                 .build();
     }
+
+    @Override
+    @KafkaListener(topics = "transaction-event", groupId = "monthly-report-group")
+    public void monthlyReportGroup(String message)  throws JsonProcessingException {
+        Map<String, Object> data = objectMapper.readValue(message, new TypeReference<>() {});
+        String group = String.valueOf(data.get("group"));
+        if (group.equals("monthly-report-group")) {
+            String email = String.valueOf(data.get("userEmail"));
+            System.out.println("KAFKA-TOPIC-monthly-GROUP:" + group);
+            List<Transaction> transactionList = transactionRepo.findAllByUserEmail(email);
+            Map<Integer, Double> totalByMonth = transactionList.stream()
+                    .collect(Collectors.groupingBy(
+                            tran -> {
+                                Calendar cal = Calendar.getInstance();
+                                cal.setTime(tran.getTransactionDate());
+                                return cal.get(Calendar.MONTH) + 1;  // Tháng trả về từ 0 - 11 nên +1 cho đúng tháng 1-12
+                            } ,     // Lấy tháng (1-12)
+                            Collectors.summingDouble(tran -> tran.getAmount().doubleValue())  // Tính tổng amount cho từng tháng
+                    ));
+
+        }
+        System.out.println("TOTAL-BY-MONTH: "+
+                String.valueOf(data.get("todo")) + " - " +
+                String.valueOf(data.get("targetId")) + " - " +
+                        String.valueOf(data.get("userEmail"))+ " - " +
+                        String.valueOf(data.get("timeStamp"))
+                );
+    }
 }
+

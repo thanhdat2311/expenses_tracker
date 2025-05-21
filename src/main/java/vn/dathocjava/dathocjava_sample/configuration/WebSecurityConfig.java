@@ -32,18 +32,26 @@ public class WebSecurityConfig {
                             // Transactions
                             .requestMatchers(HttpMethod.POST, "expenses-tracker/v1/transactions/createTransaction")
                             .hasAnyRole(Role.ADMIN,Role.USER,Role.SYSTEM_ADMIN)
-                            .requestMatchers(HttpMethod.POST, "expenses-tracker/v1/chatAI")
-                            .hasAnyRole(Role.ADMIN,Role.USER,Role.SYSTEM_ADMIN)
+
                             .requestMatchers(HttpMethod.GET, "expenses-tracker/v1/transactions/all**")
                             .hasAnyRole(Role.ADMIN,Role.USER,Role.SYSTEM_ADMIN)
                             .requestMatchers(HttpMethod.DELETE, "expenses-tracker/v1/transactions/deleteTransaction")
                             .hasAnyRole(Role.ADMIN,Role.USER,Role.SYSTEM_ADMIN)
                             .requestMatchers(HttpMethod.PUT, "expenses-tracker/v1/transactions/**")
                             .hasAnyRole(Role.ADMIN,Role.USER,Role.SYSTEM_ADMIN)
+                            // chat AI
+                            .requestMatchers(HttpMethod.POST, "expenses-tracker/v1/chatAI")
+                            .hasAnyRole(Role.ADMIN,Role.USER,Role.SYSTEM_ADMIN)
+                            .requestMatchers(HttpMethod.GET, "expenses-tracker/v1/chatAI/get-all")
+                            .hasAnyRole(Role.ADMIN,Role.USER,Role.SYSTEM_ADMIN)
+                            .requestMatchers(HttpMethod.DELETE, "expenses-tracker/v1/chatAI/delete-all")
+                            .hasAnyRole(Role.ADMIN,Role.USER,Role.SYSTEM_ADMIN)
                             // Categories
                             .requestMatchers(HttpMethod.GET, "expenses-tracker/v1/categories/**")
                             .hasAnyRole(Role.ADMIN,Role.USER,Role.SYSTEM_ADMIN)
                             .requestMatchers(HttpMethod.POST, "expenses-tracker/v1/categories/**")
+                            .hasAnyRole(Role.ADMIN,Role.SYSTEM_ADMIN)
+                            .requestMatchers(HttpMethod.DELETE, "expenses-tracker/v1/categories/delete-all")
                             .hasAnyRole(Role.ADMIN,Role.SYSTEM_ADMIN)
                             // status
                             .requestMatchers(HttpMethod.GET, "salemanagement/v1/status")

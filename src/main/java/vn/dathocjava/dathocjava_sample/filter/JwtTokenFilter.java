@@ -37,7 +37,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             if (isByPassToken(request)) {
-                System.out.println(">>> Đã vào filter trước khi gọi controller: " + request.getRequestURI());
 
                 filterChain.doFilter(request, response);
                 return;

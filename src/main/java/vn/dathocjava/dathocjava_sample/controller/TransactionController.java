@@ -46,12 +46,12 @@ public class TransactionController {
 
     @DeleteMapping("/deleteTransaction/{transactionId}")
     public ResponseEntity<?> deleteTransaction(@Min(value = 1) @PathVariable Long transactionId) {
-        try {
-
-
+        try{
             Long transaction = transactionService.deleteTransaction(transactionId);
             return ResponseEntity
-                    .ok(new ResponseData<>(HttpStatus.ACCEPTED.value(), "Delete successfully, transaction id: " + transaction));
+                    .ok(new ResponseData<>(HttpStatus.ACCEPTED.value(),
+                            "Delete successfully, transaction id: "
+                                    + transaction));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         }
